@@ -5,14 +5,14 @@ using Restaurant.Application.Interfaces;
 namespace Restaurant.Presentation.Controllers
 {
     [ApiController]
-    [Route("user")]
+    [Route("api/users")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
 
         public UserController(IUserService userService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         [HttpPost("auth")]
@@ -52,7 +52,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok(user);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             await _userService.DeleteUser(id);

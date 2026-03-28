@@ -28,6 +28,9 @@ namespace Restaurant.Infrastructure.Repositories
         public async Task<bool> NumberExistsInHallAsync(int number, Guid hallId)
             => await _context.Tables.AnyAsync(t => t.Number == number && t.HallId == hallId);
 
+        public async Task<bool> PositionExistsInHallAsync(int widthPosition, int lengthPosition, Guid hallId)
+            => await _context.Tables.Where(t => t.HallId == hallId).AnyAsync(t => t.WidthPosition == widthPosition && t.LengthPosition == lengthPosition) ? true : false;
+
         public async Task<int> GetMaxWidthPositionInHallAsync(Guid hallId)
             => await _context.Tables.Where(t => t.HallId == hallId).AnyAsync()
                 ? await _context.Tables.Where(t => t.HallId == hallId).MaxAsync(t => t.WidthPosition)

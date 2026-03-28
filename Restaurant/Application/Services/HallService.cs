@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Exceptions;
@@ -73,12 +74,13 @@ namespace Restaurant.Application.Services
             await _hallRepository.SaveChangesAsync();
         }
 
-        public async Task<List<Hall>> GetAllHalls()
+        public async Task<List<HallResponse>> GetAllHalls()
         {
-            return await _hallRepository.GetAllAsync();
+            var halls = await _hallRepository.GetAllAsync() ?? new List<Hall>();
+            return halls.Select(h => new HallResponse(h)).ToList();
         }
 
-        public async Task<Hall?> GetHallByRequest(SearchHallRequest request)
+        public async Task<HallResponse?> GetHallByRequest(SearchHallRequest request)
         {
             IQueryable<Hall> query = _hallRepository.Query();
 
@@ -88,7 +90,8 @@ namespace Restaurant.Application.Services
             if (!string.IsNullOrWhiteSpace(request.Name))
                 query = query.Where(h => h.Name == request.Name);
 
-            return await query.FirstOrDefaultAsync();
+            var hall = await query.FirstOrDefaultAsync();
+            return hall == null ? null : new HallResponse(hall);
         }
     }
 }

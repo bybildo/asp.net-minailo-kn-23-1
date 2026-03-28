@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Exceptions;
 using Restaurant.Application.Interfaces;
@@ -24,8 +25,13 @@ namespace Restaurant.Application.Services
                 throw new NotFoundException("Hall not found");
 
             var isNumberExists = await _tableRepository.NumberExistsInHallAsync(request.Number, request.HallId);
+            var isPositionExists = await _tableRepository.PositionExistsInHallAsync(request.WidthPosition, request.LengthPosition, request.HallId);
+
             if (isNumberExists)
                 throw new IncorrectDataEnteredException("Number already exists in this hall.");
+
+            if (isPositionExists)
+                throw new IncorrectDataEnteredException("Position already exists in this hall.");
 
             if (request.WidthPosition < 0 || request.WidthPosition > hall.Width
                 || request.LengthPosition < 0 || request.LengthPosition > hall.Length)
@@ -59,13 +65,23 @@ namespace Restaurant.Application.Services
             await _tableRepository.SaveChangesAsync();
         }
 
-        public async Task<List<Table>> GetTablesByHallId(Guid hallId)
-            => await _tableRepository.GetByHallIdAsync(hallId);
+        public async Task<List<TableResponse>> GetTablesByHallId(Guid hallId)
+        {
+            var tables = await _tableRepository.GetByHallIdAsync(hallId) ?? new List<Table>();
+            return tables.Select(t => new TableResponse(t)).ToList();
+        }
 
-        public async Task<Table?> GetTableById(Guid id)
-            => await _tableRepository.GetByIdAsync(id);
+        public async Task<TableResponse?> GetTableById(Guid id)
+        {
+            var table = await _tableRepository.GetByIdAsync(id);
+            return table == null ? null : new TableResponse(table);
+        }
 
-        public async Task<List<Table>> GetAllTables()
-            => await _tableRepository.GetAllAsync();
+
+        public async Task<List<TableResponse>> GetAllTables()
+        {
+            var tables = await _tableRepository.GetAllAsync() ?? new List<Table>();
+            return tables.Select(t => new TableResponse(t)).ToList();
+        }
     }
 }

@@ -6,14 +6,14 @@ using Restaurant.Domain.Entities;
 namespace Restaurant.Presentation.Controllers
 {
     [ApiController]
-    [Route("hall")]
+    [Route("api/halls")]
     public class HallController : ControllerBase
     {
         private readonly IHallService _hallService;
 
         public HallController(IHallService hallService)
         {
-            _hallService = hallService;
+            _hallService = hallService ?? throw new ArgumentNullException(nameof(hallService));
         }
 
         [HttpGet]
@@ -23,8 +23,9 @@ namespace Restaurant.Presentation.Controllers
             return Ok(halls);
         }
 
-        [HttpGet("find")]
-        public async Task<ActionResult<Hall>> GetByRequest([FromQuery] SearchHallRequest request)
+        [HttpGet]
+        [Route("find")]
+        public async Task<ActionResult<Hall>> GetBySearchRequest([FromQuery] SearchHallRequest request)
         {
             var hall = await _hallService.GetHallByRequest(request);
 
@@ -48,7 +49,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteHall(Guid id)
         {
             await _hallService.DeleteHall(id);

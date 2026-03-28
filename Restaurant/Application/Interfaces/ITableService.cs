@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Domain.Entities;
 
@@ -7,8 +8,8 @@ namespace Restaurant.Application.Interfaces
     {
         Task AddTable(AddTableRequest request);
         Task DeleteTable(Guid id);
-        Task<List<Table>> GetAllTables();
-        Task<Table?> GetTableById(Guid id);
-        Task<List<Table>> GetTablesByHallId(Guid hallId);
+        Task<List<TableResponse>> GetAllTables();
+        Task<TableResponse?> GetTableById(Guid id);
+        Task<List<TableResponse>> GetTablesByHallId(Guid hallId);
     }
 }

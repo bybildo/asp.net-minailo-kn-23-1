@@ -2,20 +2,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Interfaces;
+using Restaurant.Application.Services;
 using Restaurant.Domain.Entities;
 using System.Security.Claims;
 
 namespace Restaurant.Presentation.Controllers
 {
     [ApiController]
-    [Route("reservation")]
+    [Route("api/reservations")]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
 
         public ReservationController(IReservationService reservationService)
         {
-            _reservationService = reservationService;
+            _reservationService = reservationService ?? throw new ArgumentNullException(nameof(reservationService));
         }
 
         [HttpGet]
@@ -25,7 +26,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok(reservations);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<Reservation>> GetById(Guid id)
         {
             var reservation = await _reservationService.GetReservationById(id);

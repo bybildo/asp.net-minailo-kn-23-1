@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.DTOs.Responses;
@@ -6,6 +7,7 @@ using Restaurant.Application.Interfaces;
 using Restaurant.Application.Utils;
 using Restaurant.Domain.Entities;
 using Restaurant.Domain.Enums;
+using System;
 
 namespace Restaurant.Application.Services
 {
@@ -20,7 +22,7 @@ namespace Restaurant.Application.Services
             _jwtService = jwtService;
         }
 
-        public async Task<User> AddUser(AddUserRequest request)
+        public async Task<UserResponse> AddUser(AddUserRequest request)
         {
             var passwordHash = await PasswordHasher.HashPasswordAsync(request.Password);
 
@@ -39,22 +41,23 @@ namespace Restaurant.Application.Services
             await _userRepository.AddAsync(newUser);
             await _userRepository.SaveChangesAsync();
 
-            return newUser;
+            return newUser == null ? null : new UserResponse(newUser);
         }
 
-        public async Task<User?> GetUserByRequest(SearchUserRequest request)
+        public async Task<UserResponse?> GetUserByRequest(SearchUserRequest request)
         {
             var user = await FilterUsers(request).FirstOrDefaultAsync();
 
             if (user == null)
                 throw new NotFoundException("User not found");
 
-            return user;
+            return user == null ? null : new UserResponse(user);
         }
 
-        public async Task<List<User>> GetUsersByRequest(SearchUserRequest request)
+        public async Task<List<UserResponse>> GetUsersByRequest(SearchUserRequest request)
         {
-            return await FilterUsers(request).ToListAsync();
+            var users = await FilterUsers(request).ToListAsync();
+            return users == null ? null : users.Select(u => new UserResponse(u)).ToList();
         }
 
         public async Task DeleteUser(Guid id)
@@ -73,7 +76,14 @@ namespace Restaurant.Application.Services
 
             if (user == null)
             {
-                user = await AddUser(request);
+                var userResponse = await AddUser(request);
+
+                user = new User
+                {
+                    Id = userResponse.Id,
+                    Login = userResponse.Login,
+                    Role = userResponse.Role
+                };
             }
             else
             {

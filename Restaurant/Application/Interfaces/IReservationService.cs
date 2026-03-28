@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Domain.Entities;
 
@@ -8,7 +9,7 @@ namespace Restaurant.Application.Interfaces
         Task AddReservation(AddReservationRequest request);
         Task UpdateReservation(UpdateReservationRequest request);
         Task DeleteReservation(Guid reservationId);
-        Task<List<Reservation>> GetAllReservations();
-        Task<Reservation?> GetReservationById(Guid id);
+        Task<List<ReservationResponse>> GetAllReservations();
+        Task<ReservationResponse?> GetReservationById(Guid id);
     }
 }

@@ -10,6 +10,7 @@ namespace Restaurant.Application.Interfaces
         Task<List<Table>> GetByIdsAsync(List<Guid> ids);
         Task<bool> NumberExistsInHallAsync(int number, Guid hallId);
         Task<int> GetMaxWidthPositionInHallAsync(Guid hallId);
+        Task<bool> PositionExistsInHallAsync(int widthPosition, int lengthPosition, Guid hallId);
         Task<int> GetMaxLengthPositionInHallAsync(Guid hallId);
         Task AddAsync(Table table);
         void Remove(Table table);

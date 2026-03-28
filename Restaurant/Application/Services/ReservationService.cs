@@ -1,3 +1,4 @@
+using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Exceptions;
 using Restaurant.Application.Interfaces;
@@ -99,10 +100,16 @@ namespace Restaurant.Application.Services
             await _reservationRepository.SaveChangesAsync();
         }
 
-        public async Task<List<Reservation>> GetAllReservations()
-            => await _reservationRepository.GetAllWithDetailsAsync();
+        public async Task<List<ReservationResponse>> GetAllReservations()
+        {
+            var reservations = await _reservationRepository.GetAllWithDetailsAsync() ?? new List<Reservation>();
+            return reservations.Select(r => new ReservationResponse(r)).ToList();
+        }
 
-        public async Task<Reservation?> GetReservationById(Guid id)
-            => await _reservationRepository.GetByIdAsync(id);
+        public async Task<ReservationResponse?> GetReservationById(Guid id)
+        {
+            var reservation = await _reservationRepository.GetByIdAsync(id);
+            return reservation == null ? null : new ReservationResponse(reservation);
+        }
     }
 }

@@ -6,14 +6,14 @@ using Restaurant.Domain.Entities;
 namespace Restaurant.Presentation.Controllers
 {
     [ApiController]
-    [Route("table")]
+    [Route("api/tables")]
     public class TableController : ControllerBase
     {
         private readonly ITableService _tableService;
 
         public TableController(ITableService tableService)
         {
-            _tableService = tableService;
+            _tableService = tableService ?? throw new ArgumentNullException(nameof(tableService));
         }
 
         [HttpGet]
@@ -23,7 +23,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok(tables);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<Table>> GetById(Guid id)
         {
             var table = await _tableService.GetTableById(id);
@@ -33,7 +33,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok(table);
         }
 
-        [HttpGet("hall/{hallId}")]
+        [HttpGet("hall/{hallId:guid}")]
         public async Task<ActionResult<List<Table>>> GetByHall(Guid hallId)
         {
             var tables = await _tableService.GetTablesByHallId(hallId);
@@ -47,7 +47,7 @@ namespace Restaurant.Presentation.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _tableService.DeleteTable(id);
