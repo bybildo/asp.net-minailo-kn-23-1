@@ -1,6 +1,45 @@
 @{
-    ViewData["Title"] = "Restaurant API";
+    ViewData["Title"] = "Головна";
 }
 
-<h1>Restaurant Reservation API</h1>
-<p>Use <a href="/swagger">Swagger UI</a> to explore the API.</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Бронювання столиків</h1>
+        <p class="text-muted">Оберіть столик, вкажіть час і підтвердіть бронювання</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-sm-6 col-md-3">
+            <div class="card h-100 text-center p-3">  
+                <div class="fs-2 mb-2">🔐</div>
+                <h6 class="fw-bold">Авторизація</h6>
+                <p class="text-muted small">Реєстрація та вхід до особистого кабінету</p>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-secondary mt-auto">Увійти</a>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card h-100 text-center p-3">
+                <div class="fs-2 mb-2">🪑</div>
+                <h6 class="fw-bold">Столики</h6>
+                <p class="text-muted small">Перегляд доступних столиків по залах</p>
+                <a asp-controller="Tables" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Переглянути</a>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card h-100 text-center p-3">
+                <div class="fs-2 mb-2">📅</div>
+                <h6 class="fw-bold">Бронювання</h6>
+                <p class="text-muted small">Створення та перегляд власних бронювань</p>
+                <a asp-controller="Reservations" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Переглянути</a>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card h-100 text-center p-3">
+                <div class="fs-2 mb-2">⚙️</div>
+                <h6 class="fw-bold">Адмін</h6>
+                <p class="text-muted small">Управління залами та столиками (Admin)</p>
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Панель</a>
+            </div>
+        </div>
+    </div>
+</div>

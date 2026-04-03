@@ -1,0 +1,346 @@
+@{
+    ViewData["Title"] = "Столики";
+}
+
+@section Styles {
+<style>
+.hall-map-wrap {
+    overflow-x: auto;
+    padding: 1rem;
+    background: #f9f9f9;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.hall-grid {
+    display: inline-grid;
+    gap: 8px;
+}
+
+.hall-cell {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    border: 2px dashed #dee2e6;
+    background: #fff;
+}
+
+.table-cell {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    border: 2px solid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: transform .1s, box-shadow .1s;
+    user-select: none;
+}
+
+.table-cell:hover { transform: scale(1.06); box-shadow: 0 3px 10px rgba(0,0,0,.15); }
+
+.table-free {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.table-busy {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+    cursor: not-allowed;
+}
+.table-busy:hover { transform: none; box-shadow: none; }
+
+.table-selected {
+    background: #cce5ff;
+    border-color: #004085;
+    color: #004085;
+    outline: 3px solid #004085;
+    outline-offset: 2px;
+}
+
+.table-cell .t-num { font-size: 1rem; line-height: 1; }
+.table-cell .t-cap { font-size: .7rem; opacity: .8; }
+
+.hall-btn.active { background: #7B1E1E; color: #fff; border-color: #7B1E1E; }
+
+.legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 2px solid;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+</style>
+}
+
+<div class="page-title">
+    <div class="container">
+        <h1>Карта залів</h1>
+        <span class="text-muted small">Оберіть зал, час — і побачите доступні столики</span>
+    </div>
+</div>
+
+<div class="container pb-4">
+    <div class="row g-3">
+
+        <!-- ===== ЛІВА ПАНЕЛЬ ===== -->
+        <div class="col-lg-3">
+
+            <!-- Список залів -->
+            <div class="card mb-3">
+                <div class="card-header">Зали</div>
+                <div class="list-group list-group-flush" id="hallList">
+                    <!-- генерується JS -->
+                </div>
+            </div>
+
+            <!-- Обрані столики -->
+            <div class="card" id="selectionCard" style="display:none;">
+                <div class="card-header">Обраний столик</div>
+                <div class="card-body">
+                    <div id="selectionInfo" class="mb-3"></div>
+                    <a asp-controller="Reservations" asp-action="Create"
+                       id="bookBtn" class="btn btn-primary btn-sm w-100">
+                        Забронювати →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Легенда -->
+            <div class="mt-3 small text-muted">
+                <div><span class="legend-dot" style="background:#d4edda;border-color:#28a745;"></span> Вільний</div>
+                <div class="mt-1"><span class="legend-dot" style="background:#f8d7da;border-color:#dc3545;"></span> Зайнятий / заброньований</div>
+                <div class="mt-1"><span class="legend-dot" style="background:#cce5ff;border-color:#004085;"></span> Обраний</div>
+                <div class="mt-1"><span class="legend-dot" style="background:#fff;border-color:#dee2e6;"></span> Вільна клітинка</div>
+            </div>
+        </div>
+
+        <!-- ===== ПРАВА ПАНЕЛЬ ===== -->
+        <div class="col-lg-9">
+
+            <!-- Вибір часу -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label class="form-label small mb-1">Початок <span class="text-muted">(StartDate)</span></label>
+                            <input type="datetime-local" id="startDate" class="form-control form-control-sm"
+                                   value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:00")" />
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label small mb-1">Кінець <span class="text-muted">(EndDate)</span></label>
+                            <input type="datetime-local" id="endDate" class="form-control form-control-sm"
+                                   value="@DateTime.Now.AddDays(1).AddHours(2).ToString("yyyy-MM-ddTHH:00")" />
+                        </div>
+                        <div class="col-auto">
+                            <button id="checkBtn" class="btn btn-primary btn-sm">
+                                Перевірити доступність
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <span id="checkNote" class="text-muted small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карта зали -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span id="hallTitle">Оберіть зал зліва</span>
+                    <span id="hallDims" class="text-muted small"></span>
+                </div>
+                <div class="card-body">
+                    <div id="mapPlaceholder" class="text-center text-muted py-5">
+                        ← Оберіть зал зі списку
+                    </div>
+                    <div class="hall-map-wrap" id="mapWrap" style="display:none;">
+                        <div class="hall-grid" id="hallGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// ─── Демо-дані (імітація відповіді API) ───────────────────────────────────
+const halls = [
+    { id: 'h1', name: 'Зал А',   width: 5, length: 4 },
+    { id: 'h2', name: 'Зал Б',   width: 4, length: 3 },
+    { id: 'h3', name: 'VIP-зал', width: 3, length: 2 },
+];
+
+const tables = [
+    // Зал А (5×4)
+    { id: 't1',  hallId: 'h1', number: 1,  capacity: 4, widthPosition: 1, lengthPosition: 1 },
+    { id: 't2',  hallId: 'h1', number: 2,  capacity: 2, widthPosition: 3, lengthPosition: 1 },
+    { id: 't3',  hallId: 'h1', number: 3,  capacity: 4, widthPosition: 5, lengthPosition: 1 },
+    { id: 't4',  hallId: 'h1', number: 4,  capacity: 6, widthPosition: 1, lengthPosition: 3 },
+    { id: 't5',  hallId: 'h1', number: 5,  capacity: 4, widthPosition: 3, lengthPosition: 3 },
+    { id: 't6',  hallId: 'h1', number: 6,  capacity: 2, widthPosition: 5, lengthPosition: 3 },
+    // Зал Б (4×3)
+    { id: 't7',  hallId: 'h2', number: 7,  capacity: 4, widthPosition: 1, lengthPosition: 1 },
+    { id: 't8',  hallId: 'h2', number: 8,  capacity: 6, widthPosition: 3, lengthPosition: 1 },
+    { id: 't9',  hallId: 'h2', number: 9,  capacity: 2, widthPosition: 2, lengthPosition: 2 },
+    { id: 't10', hallId: 'h2', number: 10, capacity: 4, widthPosition: 4, lengthPosition: 3 },
+    // VIP (3×2)
+    { id: 't11', hallId: 'h3', number: 11, capacity: 8, widthPosition: 1, lengthPosition: 1 },
+    { id: 't12', hallId: 'h3', number: 12, capacity: 6, widthPosition: 3, lengthPosition: 2 },
+];
+
+// Демо-бронювання (імітація бази)
+// Дати — завтрашній день, години задані явно
+const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); tmr.setHours(0, 0, 0, 0);
+const dh = h => { const d = new Date(tmr); d.setHours(h); return d; };
+
+const reservations = [
+    { tableIds: ['t2', 't5'], startDate: dh(18), endDate: dh(21) },
+    { tableIds: ['t8'],       startDate: dh(19), endDate: dh(22) },
+    { tableIds: ['t11'],      startDate: dh(17), endDate: dh(23) },
+];
+
+// ─── Стан ────────────────────────────────────────────────────────────────
+let currentHallId = null;
+let busyTableIds   = new Set(); // перевірені як зайняті
+let checkedOnce    = false;
+let selectedTableId = null;
+
+// ─── Ініціалізація ────────────────────────────────────────────────────────
+function init() {
+    const list = document.getElementById('hallList');
+    halls.forEach(hall => {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'list-group-item list-group-item-action d-flex justify-content-between hall-btn';
+        a.dataset.id = hall.id;
+        a.innerHTML = `
+            <span>${hall.name}</span>
+            <span class="text-muted small">${hall.width}×${hall.length}</span>
+        `;
+        a.addEventListener('click', e => { e.preventDefault(); selectHall(hall.id); });
+        list.appendChild(a);
+    });
+}
+
+// ─── Вибір залу ──────────────────────────────────────────────────────────
+function selectHall(hallId) {
+    currentHallId = hallId;
+    selectedTableId = null;
+    document.getElementById('selectionCard').style.display = 'none';
+
+    document.querySelectorAll('.hall-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.id === hallId);
+    });
+
+    const hall = halls.find(h => h.id === hallId);
+    document.getElementById('hallTitle').textContent = hall.name;
+    document.getElementById('hallDims').textContent = `матриця ${hall.width} × ${hall.length}`;
+    document.getElementById('mapPlaceholder').style.display = 'none';
+    document.getElementById('mapWrap').style.display = '';
+
+    renderMap(hall);
+}
+
+// ─── Рендер карти ────────────────────────────────────────────────────────
+function renderMap(hall) {
+    const grid = document.getElementById('hallGrid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${hall.width}, 72px)`;
+    grid.style.gridTemplateRows    = `repeat(${hall.length}, 72px)`;
+
+    const hallTables = tables.filter(t => t.hallId === hall.id);
+
+    // lookup позиція → столик
+    const posMap = {};
+    hallTables.forEach(t => { posMap[`${t.widthPosition},${t.lengthPosition}`] = t; });
+
+    for (let row = 1; row <= hall.length; row++) {
+        for (let col = 1; col <= hall.width; col++) {
+            const t = posMap[`${col},${row}`];
+            const cell = document.createElement('div');
+            cell.style.gridColumn = col;
+            cell.style.gridRow    = row;
+
+            if (!t) {
+                cell.className = 'hall-cell';
+            } else {
+                const isBusy     = checkedOnce && busyTableIds.has(t.id);
+                const isSelected = t.id === selectedTableId;
+                cell.className = 'table-cell ' +
+                    (isSelected ? 'table-selected' : isBusy ? 'table-busy' : 'table-free');
+                cell.dataset.id = t.id;
+                cell.innerHTML = `<div class="t-num">№${t.number}</div><div class="t-cap">👥 ${t.capacity}</div>`;
+                if (!isBusy) cell.addEventListener('click', () => selectTable(t.id));
+            }
+            grid.appendChild(cell);
+        }
+    }
+}
+
+// ─── Перевірка доступності ───────────────────────────────────────────────
+document.getElementById('checkBtn').addEventListener('click', () => {
+    const start = new Date(document.getElementById('startDate').value);
+    const end   = new Date(document.getElementById('endDate').value);
+
+    if (!start || !end || start >= end) {
+        alert('Вкажіть коректний діапазон часу');
+        return;
+    }
+
+    // Знаходимо зайняті столики: чиє бронювання перетинається з обраним діапазоном
+    busyTableIds.clear();
+    reservations.forEach(r => {
+        // Перетин: start < r.endDate && end > r.startDate
+        if (start < r.endDate && end > r.startDate) {
+            r.tableIds.forEach(id => busyTableIds.add(id));
+        }
+    });
+
+    checkedOnce = true;
+    selectedTableId = null;
+    document.getElementById('selectionCard').style.display = 'none';
+
+    const note = document.getElementById('checkNote');
+    note.textContent = `Перевірено · ${busyTableIds.size} зайнятих столиків`;
+
+    if (currentHallId) {
+        const hall = halls.find(h => h.id === currentHallId);
+        renderMap(hall);
+    }
+});
+
+// ─── Вибір столика ───────────────────────────────────────────────────────
+function selectTable(tableId) {
+    selectedTableId = tableId;
+    const t = tables.find(x => x.id === tableId);
+    const h = halls.find(x => x.id === t.hallId);
+
+    document.getElementById('selectionCard').style.display = '';
+    document.getElementById('selectionInfo').innerHTML = `
+        <div class="small">
+            <div><strong>Столик</strong>: №${t.number}</div>
+            <div><strong>Зал</strong>: ${h.name}</div>
+            <div><strong>Місць</strong>: ${t.capacity}</div>
+            <div><strong>Позиція</strong>: W=${t.widthPosition}, L=${t.lengthPosition}</div>
+        </div>
+    `;
+
+    const hall = halls.find(x => x.id === currentHallId);
+    renderMap(hall);
+}
+
+init();
+</script>
+}

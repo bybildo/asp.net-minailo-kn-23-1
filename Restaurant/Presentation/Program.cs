@@ -39,6 +39,7 @@ var app = builder.Build();
 
 app.UseCustomExceptionHandler();
 
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();

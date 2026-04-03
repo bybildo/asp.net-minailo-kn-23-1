@@ -1,0 +1,92 @@
+@{
+    ViewData["Title"] = "Нове бронювання";
+}
+
+<div class="page-title">
+    <div class="container">
+        <h1>Нове бронювання</h1>
+        <span class="text-muted">POST /api/reservations</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+
+                    <form method="post">
+
+                        <!-- TableIds -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Столики <span class="text-muted fw-normal small">(TableIds — можна кілька)</span></label>
+                            <div class="table-pick">
+                                <label>
+                                    <input type="checkbox" name="TableIds" value="guid-1" />
+                                    <span>№1 · Зал А · 4 місця</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="TableIds" value="guid-2" disabled />
+                                    <span class="text-muted">№2 · Зал А · 2 місця (зайнятий)</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="TableIds" value="guid-3" />
+                                    <span>№3 · Зал Б · 6 місць</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="TableIds" value="guid-5" />
+                                    <span>№5 · Зал А · 8 місць</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- StartDate -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="startDate">
+                                Початок <span class="text-muted fw-normal small">(StartDate)</span>
+                            </label>
+                            <input type="datetime-local" id="startDate" name="StartDate"
+                                   class="form-control"
+                                   value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:00")" />
+                        </div>
+
+                        <!-- EndDate -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" for="endDate">
+                                Кінець <span class="text-muted fw-normal small">(EndDate)</span>
+                            </label>
+                            <input type="datetime-local" id="endDate" name="EndDate"
+                                   class="form-control"
+                                   value="@DateTime.Now.AddDays(1).AddHours(2).ToString("yyyy-MM-ddTHH:00")" />
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Забронювати</button>
+                            <a asp-controller="Reservations" asp-action="Index"
+                               class="btn btn-outline-secondary">Скасувати</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Підказка -->
+        <div class="col-md-4 offset-md-1">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold">Структура запиту</h6>
+                    <pre class="small mb-0" style="white-space:pre-wrap;">{
+  "tableIds": ["guid-1", "guid-3"],
+  "startDate": "2026-04-06T19:00",
+  "endDate":   "2026-04-06T21:00"
+}</pre>
+                    <hr class="my-2"/>
+                    <p class="small text-muted mb-0">
+                        UserId береться автоматично з JWT-токена після авторизації.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

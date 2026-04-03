@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Мої бронювання";
+}
+
+<div class="page-title">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Мої бронювання</h1>
+            <span class="text-muted">GET /api/reservations</span>
+        </div>
+        <a asp-controller="Reservations" asp-action="Create" class="btn btn-primary btn-sm">
+            + Нове бронювання
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Столики</th>
+                        <th>Початок</th>
+                        <th>Кінець</th>
+                        <th>Статус</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-muted small">a1b2…</td>
+                        <td>№1, №3</td>
+                        <td>05.04.2026 19:00</td>
+                        <td>05.04.2026 21:00</td>
+                        <td><span class="badge-free">Активне</span></td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm">Скасувати</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">c3d4…</td>
+                        <td>№2</td>
+                        <td>10.04.2026 20:00</td>
+                        <td>10.04.2026 22:00</td>
+                        <td><span class="badge-reserved">Очікує</span></td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm">Скасувати</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">e5f6…</td>
+                        <td>№5</td>
+                        <td>20.03.2026 18:00</td>
+                        <td>20.03.2026 20:00</td>
+                        <td><span class="badge-done">Завершено</span></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-2">
+        Бронювання видаляється через DELETE /api/reservations/{id}
+    </p>
+</div>

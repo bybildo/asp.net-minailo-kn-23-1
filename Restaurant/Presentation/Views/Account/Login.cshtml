@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Вхід";
+}
+
+<div class="auth-box">
+    <div class="auth-card">
+        <h4>Вхід</h4>
+        <p class="text-muted small mb-4">POST /api/users/auth</p>
+
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label" for="login">Логін</label>
+                <input type="text" id="login" name="Login" class="form-control" placeholder="your_login" autocomplete="username" />
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="password">Пароль</label>
+                <input type="password" id="password" name="Password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Увійти</button>
+        </form>
+
+        <hr />
+        <p class="text-center small mb-0">
+            Немає акаунту?
+            <a asp-controller="Account" asp-action="Register">Зареєструватись</a>
+        </p>
+    </div>
+</div>
