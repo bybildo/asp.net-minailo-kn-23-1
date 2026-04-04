@@ -9,23 +9,23 @@ namespace Application.DTOs.Responses
 {
     public record TableResponse
     {
-        public Guid Id;
-        public Guid HallId;
-        public Hall Hall;
-        public int Number;
-        public int Capacity;
-        public int WidthPosition;
-        public int LengthPosition;
+        public Guid Id { get; set; }
+        public Guid HallId { get; set; }
+        public Hall Hall { get; set; }
+        public int Number { get; set; }
+        public int Capacity { get; set; }
+        public int WidthPosition { get; set; }
+        public int LengthPosition { get; set; }
 
         public TableResponse(Table table)
         {
-            table.Id = table.Id;
-            table.HallId = table.HallId;
-            table.Hall = table.Hall;
-            table.Number = table.Number;
-            table.Capacity = table.Capacity;
-            table.WidthPosition = table.WidthPosition;
-            table.LengthPosition = table.LengthPosition;
+            Id = table.Id;
+            HallId = table.HallId;
+            Hall = table.Hall;
+            Number = table.Number;
+            Capacity = table.Capacity;
+            WidthPosition = table.WidthPosition;
+            LengthPosition = table.LengthPosition;
         }
     }
 }

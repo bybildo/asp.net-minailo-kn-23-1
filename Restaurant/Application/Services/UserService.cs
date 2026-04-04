@@ -1,3 +1,4 @@
+using Application.DTOs.Requests;
 using Application.DTOs.Responses;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.Application.DTOs.Requests;
@@ -70,31 +71,41 @@ namespace Restaurant.Application.Services
             await _userRepository.SaveChangesAsync();
         }
 
-        public async Task<AddUserResponse> RegisterOrLogin(AddUserRequest request)
+        public async Task<UserCookiesResponse> Login(LoginUserRequest request)
         {
-            var user = await _userRepository.GetByLoginAsync(request.Login);
+            var user = await _userRepository.GetByEmailAsync(request.Email);
 
             if (user == null)
-            {
-                var userResponse = await AddUser(request);
+                throw new NotFoundException("User not found");
 
-                user = new User
-                {
-                    Id = userResponse.Id,
-                    Login = userResponse.Login,
-                    Role = userResponse.Role
-                };
-            }
-            else
-            {
-                var validPassword = await PasswordHasher.VerifyPasswordAsync(request.Password, user.PasswordHash);
-                if (!validPassword)
-                    throw new IncorrectDataEnteredException("Invalid password");
-            }
+            var validPassword = await PasswordHasher.VerifyPasswordAsync(request.Password, user.PasswordHash);
+            if (!validPassword)
+                throw new IncorrectDataEnteredException("Invalid password");
 
             var jwt = _jwtService.GenerateToken(user.Id, user.Login, user.Role.ToString());
 
-            return new AddUserResponse(jwt, user.Role.ToString());
+            return new UserCookiesResponse(jwt);
+        }
+
+        public async Task<UserCookiesResponse> Register(AddUserRequest request)
+        {
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+
+            if (user != null)
+                throw new IncorrectDataEnteredException("User with this email already exists");
+
+            var userResponse = await AddUser(request);
+
+            user = new User
+            {
+                Id = userResponse.Id,
+                Login = userResponse.Login,
+                Role = userResponse.Role
+            };
+
+            var jwt = _jwtService.GenerateToken(user.Id, user.Login, user.Role.ToString());
+
+            return new UserCookiesResponse(jwt);
         }
 
         public async Task<bool> IsUserExist(Guid userId, CancellationToken ct)

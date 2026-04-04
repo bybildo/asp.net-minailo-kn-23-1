@@ -29,6 +29,9 @@ namespace Restaurant.Application.Services
             if (user == null)
                 throw new NotFoundException("User not found");
 
+            if (request.TableIds == null || request.TableIds.Count == 0)
+                throw new IncorrectDataEnteredException("TableIds are required.");
+
             foreach (var tableId in request.TableIds)
             {
                 var table = await _tableRepository.GetByIdAsync(tableId);
@@ -90,9 +93,24 @@ namespace Restaurant.Application.Services
             await _reservationRepository.SaveChangesAsync();
         }
 
+        public async Task DeleteReservation(Guid reservationId, Guid requestUserId)
+        {
+            var reservation = await _reservationRepository.GetByIdAsync(reservationId);
+
+            if (reservation == null)
+                throw new NotFoundException("Reservation not found");
+
+            if (reservation.UserId != requestUserId)
+                throw new UnauthorizedAccessException("You are not authorized to delete this reservation.");
+          
+            _reservationRepository.Remove(reservation);
+            await _reservationRepository.SaveChangesAsync();
+        }
+
         public async Task DeleteReservation(Guid reservationId)
         {
             var reservation = await _reservationRepository.GetByIdAsync(reservationId);
+
             if (reservation == null)
                 throw new NotFoundException("Reservation not found");
 
@@ -100,9 +118,20 @@ namespace Restaurant.Application.Services
             await _reservationRepository.SaveChangesAsync();
         }
 
-        public async Task<List<ReservationResponse>> GetAllReservations()
+        public async Task<List<Reservation>> GetAllReservations()
         {
-            var reservations = await _reservationRepository.GetAllWithDetailsAsync() ?? new List<Reservation>();
+            return await _reservationRepository.GetAllWithDetailsAsync() ?? new List<Reservation>();
+        }
+
+        public async Task<List<ReservationResponse>> GetAllReservationsByUserId(Guid userId)
+        {
+            var reservations = await _reservationRepository.GetAllReservationsByUserIdAsync(userId) ?? new List<Reservation>();
+            return reservations.Select(r => new ReservationResponse(r)).ToList();
+        }
+
+        public async Task<List<ReservationResponse>> GetAllReservationsByHallId(Guid hallId)
+        {
+            var reservations = await _reservationRepository.GetReservationsByHallId(hallId) ?? new List<Reservation>();
             return reservations.Select(r => new ReservationResponse(r)).ToList();
         }
 

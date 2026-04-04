@@ -7,15 +7,16 @@
         <h4>Вхід</h4>
         <p class="text-muted small mb-4">POST /api/users/auth</p>
 
-        <form method="post">
+        <form id="login-form" method="post">
             <div class="mb-3">
-                <label class="form-label" for="login">Логін</label>
-                <input type="text" id="login" name="Login" class="form-control" placeholder="your_login" autocomplete="username" />
+                <label class="form-label" for="email">Пошта</label>
+                <input type="text" id="email" name="email" class="form-control" placeholder="your_email" autocomplete="username" />
             </div>
             <div class="mb-4">
                 <label class="form-label" for="password">Пароль</label>
                 <input type="password" id="password" name="Password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
             </div>
+            <div id="errorMsg" class="text-danger small" style="display:none;"></div>
             <button type="submit" class="btn btn-primary w-100">Увійти</button>
         </form>
 
@@ -26,3 +27,39 @@
         </p>
     </div>
 </div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const body = {
+            email:    document.getElementById('email').value,
+            password: document.getElementById('password').value,};
+
+        if (!body.email || !body.password) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Заповніть всі поля';
+            return;
+        }
+
+        if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(body.email)) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Неправильний формат email';
+            return;
+        }
+
+        const response = await fetch('/api/users/login', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body)});
+
+        if (response.ok) {
+            window.location.href = '/home';
+        }
+        else {
+            const err = await response.json();
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = err.message ?? 'Помилка';
+        }
+    });
+</script>

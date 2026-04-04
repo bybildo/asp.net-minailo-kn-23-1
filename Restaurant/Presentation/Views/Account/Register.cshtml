@@ -31,3 +31,49 @@
         </p>
     </div>
 </div>
+
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const body = {
+            login:    document.getElementById('login').value,
+            email:    document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            role:     'User'};
+
+        if (!body.login || !body.email || !body.password) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Заповніть всі поля';
+            return;
+        }
+
+
+        if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(body.email)) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Неправильний формат email';
+            return;
+        }
+
+        if (body.password.length < 8) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Пароль має бути не менше 8 символів';
+            return;
+        }
+
+        const response = await fetch('/api/users/register', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body)});
+
+        if (response.ok) {
+            window.location.href = '/home';
+        }
+        else {
+            const err = await response.json();
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = err.message ?? 'Помилка';
+        }
+    });
+</script>

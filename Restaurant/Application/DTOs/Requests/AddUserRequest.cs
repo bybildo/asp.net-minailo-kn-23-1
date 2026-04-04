@@ -4,7 +4,7 @@ namespace Restaurant.Application.DTOs.Requests
 {
     public record AddUserRequest(
         [Required] string Login,
-        [Required] string Password,
+        [Required, MinLength(8)] string Password,
         [Required, EmailAddress] string Email,
         string Role = "User"
     );

@@ -16,8 +16,8 @@ namespace Restaurant.Infrastructure.Repositories
         public async Task<User?> GetByIdAsync(Guid id)
             => await _context.Users.FindAsync(id);
 
-        public async Task<User?> GetByLoginAsync(string login)
-            => await _context.Users.FirstOrDefaultAsync(u => u.Login == login);
+        public async Task<User?> GetByEmailAsync(string email)
+            => await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         public IQueryable<User> Query()
             => _context.Users.AsQueryable();

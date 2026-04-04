@@ -4,10 +4,10 @@ namespace Application.DTOs.Responses
 {
     public record HallResponse
     {
-        public Guid Id;
-        public string Name;
-        public int Width;
-        public int Length;
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public int Width { get; set; }
+        public int Length { get; set; }
 
         public HallResponse(Hall hall)
         {

@@ -4,6 +4,6 @@ namespace Restaurant.Application.DTOs.Requests
         Guid? Id = null,
         string? Login = null,
         string? Email = null,
-        string? Role = "User"
+        string? Role = null
     );
 }

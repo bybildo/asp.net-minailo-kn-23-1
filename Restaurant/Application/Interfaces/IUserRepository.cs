@@ -5,7 +5,7 @@ namespace Restaurant.Application.Interfaces
     public interface IUserRepository
     {
         Task<User?> GetByIdAsync(Guid id);
-        Task<User?> GetByLoginAsync(string login);
+        Task<User?> GetByEmailAsync(string email);
         IQueryable<User> Query();
         Task AddAsync(User user);
         void Remove(User user);

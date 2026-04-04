@@ -9,7 +9,10 @@ namespace Restaurant.Application.Interfaces
         Task AddReservation(AddReservationRequest request);
         Task UpdateReservation(UpdateReservationRequest request);
         Task DeleteReservation(Guid reservationId);
-        Task<List<ReservationResponse>> GetAllReservations();
+        Task DeleteReservation(Guid reservationId, Guid requestUserId);
+        Task<List<Reservation>> GetAllReservations();
         Task<ReservationResponse?> GetReservationById(Guid id);
+        Task<List<ReservationResponse>> GetAllReservationsByHallId(Guid hallId);
+        Task<List<ReservationResponse>> GetAllReservationsByUserId(Guid userId);
     }
 }

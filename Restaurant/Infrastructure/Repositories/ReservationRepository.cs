@@ -38,6 +38,20 @@ namespace Restaurant.Infrastructure.Repositories
         public void Remove(Reservation reservation)
             => _context.Reservations.Remove(reservation);
 
+        public async Task<List<Reservation>> GetAllReservationsByUserIdAsync(Guid userId)
+            => await _context.Reservations
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Tables)
+                .ThenInclude(t => t.Hall)
+                .ToListAsync();
+
+        public async Task<List<Reservation>> GetReservationsByHallId(Guid id) 
+            => await _context.Reservations
+                .Where(r => r.Tables.Any(t => t.HallId == id))
+                .Include(r => r.Tables)
+                .ThenInclude(t => t.Hall)
+                .ToListAsync();
+
         public async Task SaveChangesAsync(CancellationToken ct = default)
             => await _context.SaveChangesAsync(ct);
     }

@@ -5,9 +5,9 @@ namespace Application.DTOs.Responses
 {
     public record UserResponse
     {
-        public Guid Id;
-        public string Login;
-        public string Email;
+        public Guid Id { get; set; }
+        public string Login { get; set; }
+        public string Email { get; set; }
         public Role Role { get; set; }
 
         public UserResponse(User user)

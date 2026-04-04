@@ -45,7 +45,7 @@ namespace Restaurant.Application.Services
             if (request.Width != null)
             {
                 var maxTableWidth = await _tableRepository.GetMaxWidthPositionInHallAsync(request.Id);
-                if ((int)request.Width > maxTableWidth)
+                if ((int)request.Width >= maxTableWidth)
                     hall.Width = (int)request.Width;
                 else
                     throw new IncorrectDataEnteredException("You have a table that is further than your width.");
@@ -54,7 +54,7 @@ namespace Restaurant.Application.Services
             if (request.Length != null)
             {
                 var maxTableLength = await _tableRepository.GetMaxLengthPositionInHallAsync(request.Id);
-                if ((int)request.Length > maxTableLength)
+                if ((int)request.Length >= maxTableLength)
                     hall.Length = (int)request.Length;
                 else
                     throw new IncorrectDataEnteredException("You have a table that is further than your length.");
