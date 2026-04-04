@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Реєстрація";
+}
+
+<div class="auth-box">
+    <div class="auth-card">
+        <h4>Реєстрація</h4>
+        <p class="text-muted small mb-4">POST /api/users/auth</p>
+
+        <form id="register-form" method="post">
+            <div class="mb-3">
+                <label class="form-label" for="login">Логін</label>
+                <input type="text" id="login" name="Login" class="form-control" placeholder="your_login" autocomplete="username" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="Email" class="form-control" placeholder="your@email.com" autocomplete="email" />
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="password">Пароль</label>
+                <input type="password" id="password" name="Password" class="form-control" placeholder="••••••••" autocomplete="new-password" />
+            </div>
+            <div id="errorMsg" class="text-danger small" style="display:none;"></div>
+            <button type="submit" class="btn btn-primary w-100">Зареєструватись</button>
+        </form>
+
+        <hr />
+        <p class="text-center small mb-0">
+            Вже є акаунт?
+            <a asp-controller="Account" asp-action="Login">Увійти</a>
+        </p>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const body = {
+            login:    document.getElementById('login').value,
+            email:    document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            role:     'User'};
+
+        if (!body.login || !body.email || !body.password) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Заповніть всі поля';
+            return;
+        }
+
+
+        if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(body.email)) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Неправильний формат email';
+            return;
+        }
+
+        if (body.password.length < 8) {
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = 'Пароль має бути не менше 8 символів';
+            return;
+        }
+
+        const response = await fetch('/api/users/register', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body)});
+
+        if (response.ok) {
+            window.location.href = '/home';
+        }
+        else {
+            const err = await response.json();
+            document.getElementById('errorMsg').style.display = '';
+            document.getElementById('errorMsg').textContent = err.message ?? 'Помилка';
+        }
+    });
+</script>

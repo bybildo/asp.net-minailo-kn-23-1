@@ -1,0 +1,698 @@
+@{
+    ViewData["Title"] = "Адмін-панель";
+}
+
+<div class="page-title">
+    <div class="container">
+        <h1>Адмін-панель</h1>
+        <span class="text-muted">Управління залами, столиками та користувачами</span>
+    </div>
+</div>
+
+<div class="container">
+    <ul class="nav nav-tabs mb-3" id="adminTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#halls">Зали</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#tables">Столики</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#reservations">Бронювання</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#users">Користувачі</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <div class="tab-pane fade show active" id="halls">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Зали</h6>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddHall">+ Додати зал</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Назва</th>
+                                <th>Ширина</th>
+                                <th>Довжина</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="hallsTbody">
+                            <tr><td colspan="4" class="text-center text-muted py-3">Завантаження…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tables">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Столики</h6>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddTable">+ Додати столик</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Зал</th>
+                                <th>Місткість</th>
+                                <th>Поз. X</th>
+                                <th>Поз. Y</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablesTbody">
+                            <tr><td colspan="6" class="text-center text-muted py-3">Завантаження…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="reservations">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Всі бронювання</h6>
+                <button class="btn btn-primary btn-sm" onclick="openAddReservation()">+ Нове бронювання</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Користувач</th>
+                                <th>Столики</th>
+                                <th>Початок</th>
+                                <th>Кінець</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservationsTbody">
+                            <tr><td colspan="6" class="text-center text-muted py-3">Завантаження…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="users">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Користувачі</h6>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddUser">+ Додати користувача</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Login</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTbody">
+                            <tr><td colspan="4" class="text-center text-muted py-3">Завантаження…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddHall" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Додати зал</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Назва</label>
+                    <input type="text" class="form-control" id="addHallName" />
+                </div>
+                <div class="row g-3">
+                    <div class="col">
+                        <label class="form-label">Ширина</label>
+                        <input type="number" class="form-control" id="addHallWidth" min="1" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Довжина</label>
+                        <input type="number" class="form-control" id="addHallLength" min="1" />
+                    </div>
+                </div>
+                <div id="addHallError" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="btnAddHall">Зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditHall" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редагувати зал</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Назва</label>
+                    <input type="text" class="form-control" id="editHallName" />
+                </div>
+                <div class="row g-3">
+                    <div class="col">
+                        <label class="form-label">Ширина</label>
+                        <input type="number" class="form-control" id="editHallWidth" min="1" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Довжина</label>
+                        <input type="number" class="form-control" id="editHallLength" min="1" />
+                    </div>
+                </div>
+                <div id="editHallError" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="btnEditHall">Зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddTable" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Додати столик</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Зал</label>
+                    <select class="form-select" id="addTableHallId"></select>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col">
+                        <label class="form-label">Номер</label>
+                        <input type="number" class="form-control" id="addTableNumber" min="1" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Місткість</label>
+                        <input type="number" class="form-control" id="addTableCapacity" min="1" />
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col">
+                        <label class="form-label">Позиція X (ширина)</label>
+                        <input type="number" class="form-control" id="addTableWidthPos" min="0" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Позиція Y (довжина)</label>
+                        <input type="number" class="form-control" id="addTableLengthPos" min="0" />
+                    </div>
+                </div>
+                <div id="addTableError" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="btnAddTable">Зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddReservation" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Нове бронювання</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Користувач</label>
+                    <select class="form-select" id="resUserId"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Зал</label>
+                    <select class="form-select" id="resHallId"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Столики</label>
+                    <div id="resTablesList" class="border rounded p-2" style="min-height:48px">
+                        <span class="text-muted small">Оберіть зал</span>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col">
+                        <label class="form-label">Початок</label>
+                        <input type="datetime-local" class="form-control" id="resStartDate" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Тривалість</label>
+                        <select class="form-select" id="resDuration">
+                            <option value="1">1 год</option>
+                            <option value="2" selected>2 год</option>
+                            <option value="3">3 год</option>
+                            <option value="4">4 год</option>
+                            <option value="5">5 год</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="addResError" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="btnAddReservation">Зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddUser" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Додати користувача</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Login</label>
+                    <input type="text" class="form-control" id="addUserLogin" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="addUserEmail" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="addUserPassword" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Роль</label>
+                    <select class="form-select" id="addUserRole">
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div id="addUserError" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="btnAddUser">Зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let halls = [];
+    let editHallId = null;
+
+    function fmtDate(d) {
+        const dt = new Date(d);
+        return dt.toLocaleDateString('uk') + ' ' + dt.toLocaleTimeString('uk', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function checkAuth() {
+        const r = await fetch('/api/users/verify');
+        if (!r.ok) { window.location.href = '/'; return; }
+        const u = await r.json();
+        if (u.role !== 'Admin') window.location.href = '/';
+    }
+
+    async function loadHalls() {
+        const r = await fetch('/api/halls');
+        if (!r.ok) return;
+        halls = await r.json();
+
+        const tbody = document.getElementById('hallsTbody');
+        tbody.innerHTML = '';
+
+        if (!halls.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Залів немає</td></tr>';
+            return;
+        }
+
+        halls.forEach(h => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-semibold">${h.name}</td>
+                <td>${h.width}</td>
+                <td>${h.length}</td>
+                <td>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="openEditHall('${h.id}')">Ред.</button>
+                    <button class="btn btn-outline-danger btn-sm ms-1" onclick="deleteHall('${h.id}')">Вид.</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('addTableHallId').innerHTML =
+            halls.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+    }
+
+    async function loadTables() {
+        const r = await fetch('/api/tables');
+        if (!r.ok) return;
+        const tables = await r.json();
+
+        const tbody = document.getElementById('tablesTbody');
+        tbody.innerHTML = '';
+
+        if (!tables.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Столиків немає</td></tr>';
+            return;
+        }
+
+        tables.forEach(t => {
+            const hall = halls.find(h => h.id === t.hallId);
+            const hallName = hall ? hall.name : '—';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${t.number}</td>
+                <td>${hallName}</td>
+                <td>${t.capacity}</td>
+                <td>${t.widthPosition}</td>
+                <td>${t.lengthPosition}</td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteTable('${t.id}')">Вид.</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadReservations() {
+        const r = await fetch('/api/reservations/all');
+        if (!r.ok) return;
+        const data = await r.json();
+
+        const tbody = document.getElementById('reservationsTbody');
+        tbody.innerHTML = '';
+
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Бронювань немає</td></tr>';
+            return;
+        }
+
+        data.forEach(res => {
+            const tableNums = (res.tables ?? []).map(t => `№${t.number}`).join(', ') || '—';
+            const login = res.user?.login ?? '—';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-muted small">${res.id.slice(0, 8)}…</td>
+                <td>${login}</td>
+                <td>${tableNums}</td>
+                <td>${fmtDate(res.startDate)}</td>
+                <td>${fmtDate(res.endDate)}</td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteReservation('${res.id}')">Вид.</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadUsers() {
+        const r = await fetch('/api/users');
+        if (!r.ok) return;
+        const users = await r.json();
+
+        const tbody = document.getElementById('usersTbody');
+        tbody.innerHTML = '';
+
+        if (!users.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Користувачів немає</td></tr>';
+            return;
+        }
+
+        users.forEach(u => {
+            const isAdmin = u.role === 1;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${u.login}</td>
+                <td>${u.email}</td>
+                <td><span class="badge ${isAdmin ? 'bg-danger' : 'bg-secondary'}">${isAdmin ? 'Admin' : 'User'}</span></td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteUser('${u.id}')">Вид.</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openEditHall(id) {
+        const h = halls.find(x => x.id === id);
+        if (!h) return;
+        editHallId = id;
+        document.getElementById('editHallName').value = h.name;
+        document.getElementById('editHallWidth').value = h.width;
+        document.getElementById('editHallLength').value = h.length;
+        document.getElementById('editHallError').textContent = '';
+        new bootstrap.Modal(document.getElementById('modalEditHall')).show();
+    }
+
+    async function deleteHall(id) {
+        if (!confirm('Видалити зал?')) return;
+        const r = await fetch(`/api/halls/${id}`, { method: 'DELETE' });
+        if (r.ok) {
+            await loadHalls();
+            await loadTables();
+        } else {
+            alert('Помилка видалення');
+        }
+    }
+
+    async function deleteTable(id) {
+        if (!confirm('Видалити столик?')) return;
+        const r = await fetch(`/api/tables/${id}`, { method: 'DELETE' });
+        if (r.ok) await loadTables();
+        else alert('Помилка видалення');
+    }
+
+    async function deleteReservation(id) {
+        if (!confirm('Видалити бронювання?')) return;
+        const r = await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+        if (r.ok) await loadReservations();
+        else alert('Помилка видалення');
+    }
+
+    async function deleteUser(id) {
+        if (!confirm('Видалити користувача?')) return;
+        const r = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (r.ok) await loadUsers();
+        else alert('Помилка видалення');
+    }
+
+    document.getElementById('btnAddHall').addEventListener('click', async () => {
+        const name = document.getElementById('addHallName').value.trim();
+        const width = parseInt(document.getElementById('addHallWidth').value);
+        const length = parseInt(document.getElementById('addHallLength').value);
+        const errEl = document.getElementById('addHallError');
+
+        if (!name || !width || !length) {
+            errEl.textContent = 'Заповніть всі поля';
+            return;
+        }
+
+        const r = await fetch('/api/halls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, width, length })
+        });
+
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddHall')).hide();
+            document.getElementById('addHallName').value = '';
+            document.getElementById('addHallWidth').value = '';
+            document.getElementById('addHallLength').value = '';
+            errEl.textContent = '';
+            await loadHalls();
+        } else {
+            errEl.textContent = 'Помилка збереження';
+        }
+    });
+
+    document.getElementById('btnEditHall').addEventListener('click', async () => {
+        const name = document.getElementById('editHallName').value.trim();
+        const width = parseInt(document.getElementById('editHallWidth').value);
+        const length = parseInt(document.getElementById('editHallLength').value);
+        const errEl = document.getElementById('editHallError');
+
+        if (!name || !width || !length) {
+            errEl.textContent = 'Заповніть всі поля';
+            return;
+        }
+
+        const r = await fetch('/api/halls', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: editHallId, name, width, length })
+        });
+
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalEditHall')).hide();
+            errEl.textContent = '';
+            await loadHalls();
+        } else {
+            const text = await r.text();
+            errEl.textContent = text || 'Помилка збереження';
+        }
+    });
+
+    document.getElementById('btnAddTable').addEventListener('click', async () => {
+        const hallId = document.getElementById('addTableHallId').value;
+        const number = parseInt(document.getElementById('addTableNumber').value);
+        const capacity = parseInt(document.getElementById('addTableCapacity').value);
+        const widthPosition = parseInt(document.getElementById('addTableWidthPos').value);
+        const lengthPosition = parseInt(document.getElementById('addTableLengthPos').value);
+        const errEl = document.getElementById('addTableError');
+
+        if (!hallId || !number || !capacity || isNaN(widthPosition) || isNaN(lengthPosition)) {
+            errEl.textContent = 'Заповніть всі поля';
+            return;
+        }
+
+        const r = await fetch('/api/tables', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hallId, number, capacity, widthPosition, lengthPosition })
+        });
+
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddTable')).hide();
+            document.getElementById('addTableNumber').value = '';
+            document.getElementById('addTableCapacity').value = '';
+            document.getElementById('addTableWidthPos').value = '';
+            document.getElementById('addTableLengthPos').value = '';
+            errEl.textContent = '';
+            await loadTables();
+        } else {
+            errEl.textContent = 'Помилка збереження';
+        }
+    });
+
+    async function openAddReservation() {
+        const userSel = document.getElementById('resUserId');
+        const hallSel = document.getElementById('resHallId');
+
+        const ur = await fetch('/api/users');
+        const users = ur.ok ? await ur.json() : [];
+        userSel.innerHTML = users.map(u => `<option value="${u.id}">${u.login} (${u.role === 1 ? 'Admin' : 'User'})</option>`).join('');
+
+        hallSel.innerHTML = halls.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+
+        document.getElementById('resTablesList').innerHTML = '<span class="text-muted small">Оберіть зал</span>';
+        document.getElementById('addResError').textContent = '';
+
+        if (halls.length) await loadResHallTables(halls[0].id);
+
+        new bootstrap.Modal(document.getElementById('modalAddReservation')).show();
+    }
+
+    async function loadResHallTables(hallId) {
+        const r = await fetch(`/api/tables/hall/${hallId}`);
+        const list = document.getElementById('resTablesList');
+        if (!r.ok) { list.innerHTML = '<span class="text-muted small">Помилка завантаження</span>'; return; }
+        const tbls = await r.json();
+        if (!tbls.length) { list.innerHTML = '<span class="text-muted small">Немає столиків</span>'; return; }
+        list.innerHTML = tbls.map(t => `
+            <div class="form-check">
+                <input class="form-check-input res-table-check" type="checkbox" value="${t.id}" id="rt_${t.id}">
+                <label class="form-check-label" for="rt_${t.id}">Столик №${t.number} (${t.capacity} ос.)</label>
+            </div>`).join('');
+    }
+
+    document.getElementById('resHallId').addEventListener('change', e => loadResHallTables(e.target.value));
+
+    document.getElementById('btnAddReservation').addEventListener('click', async () => {
+        const userId = document.getElementById('resUserId').value;
+        const startVal = document.getElementById('resStartDate').value;
+        const duration = parseInt(document.getElementById('resDuration').value);
+        const errEl = document.getElementById('addResError');
+
+        const checked = [...document.querySelectorAll('.res-table-check:checked')].map(cb => cb.value);
+
+        if (!userId || !startVal || !duration || checked.length === 0) {
+            errEl.textContent = 'Заповніть всі поля та оберіть хоча б один столик';
+            return;
+        }
+
+        const pad = n => String(n).padStart(2, '0');
+        const toLocalStr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        const end = new Date(new Date(startVal).getTime() + duration * 60 * 60 * 1000);
+
+        const r = await fetch('/api/reservations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId,
+                tableIds: checked,
+                startDate: startVal,
+                endDate: toLocalStr(end)
+            })
+        });
+
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddReservation')).hide();
+            errEl.textContent = '';
+            await loadReservations();
+        } else {
+            const err = await r.json().catch(() => ({}));
+            errEl.textContent = err.message || 'Помилка збереження';
+        }
+    });
+
+    document.getElementById('btnAddUser').addEventListener('click', async () => {
+        const login = document.getElementById('addUserLogin').value.trim();
+        const email = document.getElementById('addUserEmail').value.trim();
+        const password = document.getElementById('addUserPassword').value;
+        const role = document.getElementById('addUserRole').value;
+        const errEl = document.getElementById('addUserError');
+
+        if (!login || !email || !password) {
+            errEl.textContent = 'Заповніть всі поля';
+            return;
+        }
+
+        const r = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login, email, password, role })
+        });
+
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddUser')).hide();
+            document.getElementById('addUserLogin').value = '';
+            document.getElementById('addUserEmail').value = '';
+            document.getElementById('addUserPassword').value = '';
+            document.getElementById('addUserRole').value = 'User';
+            errEl.textContent = '';
+            await loadUsers();
+        } else {
+            const text = await r.text();
+            errEl.textContent = text || 'Помилка збереження';
+        }
+    });
+
+    async function start() {
+        await checkAuth();
+        await loadHalls();
+        await Promise.all([loadTables(), loadReservations(), loadUsers()]);
+    }
+
+    start();
+</script>
