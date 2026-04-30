@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Interfaces;
+using Restaurant.Presentation.Filters;
 using Restaurant.Presentation.ViewModels.Lab3;
 
 namespace Restaurant.Presentation.Controllers;
 
 [Authorize(Roles = "Admin")]
+[ControllerLevelLogFilter]
 public class Lab3Controller : Controller
 {
     private readonly IHallService _hallService;
@@ -31,6 +33,7 @@ public class Lab3Controller : Controller
     }
 
     [HttpGet]
+    [TypeFilter(typeof(TypeLevelLogFilter), Arguments = new object[] { "Lab3EditGet" })]
     public async Task<IActionResult> Edit(Guid id)
     {
         var hall = await _hallService.GetHallByRequest(new SearchHallRequest(Id: id, Name: null));
@@ -47,6 +50,7 @@ public class Lab3Controller : Controller
     }
 
     [HttpPost]
+    [ActionLevelLogFilter]
     public async Task<IActionResult> Edit(HallEditViewModel model)
     {
         if (!ModelState.IsValid)

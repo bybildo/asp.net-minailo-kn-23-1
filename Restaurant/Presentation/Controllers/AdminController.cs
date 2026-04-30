@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
 using Restaurant.Application.Interfaces;
+using Restaurant.Presentation.Filters;
 using Restaurant.Presentation.ViewModels.Admin;
 
 namespace Restaurant.Presentation.Controllers;
@@ -23,6 +24,7 @@ public class AdminController : Controller
     }
 
     [Authorize(Roles = "Admin")]
+    [ServiceFilter(typeof(ServiceLevelLogFilter))]
     public async Task<IActionResult> Index()
     {
         return View(new AdminIndexViewModel
