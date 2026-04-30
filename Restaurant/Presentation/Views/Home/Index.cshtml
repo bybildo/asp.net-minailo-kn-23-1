@@ -9,7 +9,7 @@
     </div>
 
     <div class="row g-4 justify-content-center">
-        <div id="login" class="col-sm-6 col-md-3">
+        <div id="login" class="col-sm-6 col-md-3" style="@(User.Identity?.IsAuthenticated == true ? "display:none" : "")">
             <div class="card h-100 text-center p-3">
                 <div class="fs-2 mb-2">🔐</div>
                 <h6 class="fw-bold">Авторизація</h6>
@@ -25,7 +25,7 @@
                 <a asp-controller="Tables" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Переглянути</a>
             </div>
         </div>
-        <div id="reservations" style="display: none" class="col-sm-6 col-md-3">
+        <div id="reservations" style="@(User.Identity?.IsAuthenticated == true ? "" : "display:none")" class="col-sm-6 col-md-3">
             <div class="card h-100 text-center p-3">
                 <div class="fs-2 mb-2">📅</div>
                 <h6 class="fw-bold">Бронювання</h6>
@@ -33,7 +33,7 @@
                 <a asp-controller="Reservations" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Переглянути</a>
             </div>
         </div>
-        <div id="admin" style="display: none" class="col-sm-6 col-md-3">
+        <div id="admin" style="@(User.IsInRole("Admin") ? "" : "display:none")" class="col-sm-6 col-md-3">
             <div class="card h-100 text-center p-3">
                 <div class="fs-2 mb-2">⚙️</div>
                 <h6 class="fw-bold">Адмін</h6>
@@ -43,20 +43,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    async function checkAuth() {
-        const response = await fetch('/api/users/verify', {
-            method: 'GET'
-        });
-        if (response.ok) {
-            const user = await response.json();
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('reservations').style.display = 'inline';
-            if (user.role === 'Admin') {
-                document.getElementById('admin').style.display = 'inline';
-            }
-        }
-    }
-    checkAuth();
-</script>

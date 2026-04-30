@@ -1,3 +1,4 @@
+@model Restaurant.Presentation.ViewModels.Tables.TablesIndexViewModel
 @{
     ViewData["Title"] = "Столики";
 }
@@ -126,7 +127,7 @@
                 <div class="card-header">Обрані столики</div>
                 <div class="card-body">
                     <div id="selectionInfo" class="mb-3"></div>
-                    <a id="bookBtn" class="btn btn-primary btn-sm w-100">
+                    <a id="bookBtn" class="btn btn-primary btn-sm w-100" href="#">
                         Забронювати →
                     </a>
                 </div>
@@ -190,56 +191,62 @@
 @section Scripts {
         <script>
             let user = null;
+            const modelUserId = '@(Model.UserId?.ToString() ?? "")';
+            const rawHalls = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Halls));
+            const rawTables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tables));
+            const rawReservations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Reservations));
 
-            async function loadUserId(){
-                const response = await fetch(`/api/users/verify`, {
-                    method: 'GET'
-                });
-                if (response.ok) {
-                    var data = await response.json();
-                    user = data.id;
-                } else {
-                    document.getElementById('bookBtn').textContent = 'Увійдіть, щоб забронювати';
-                    document.getElementById('bookBtn').href = '/Account/Login';
-                    document.getElementById('bookBtn').disabled = true;
+            const modelHalls = (rawHalls ?? []).map(h => ({
+                id: h.id ?? h.Id,
+                name: h.name ?? h.Name,
+                width: h.width ?? h.Width,
+                length: h.length ?? h.Length
+            }));
+
+            const modelTables = (rawTables ?? []).map(t => ({
+                id: t.id ?? t.Id,
+                hallId: t.hallId ?? t.HallId,
+                number: t.number ?? t.Number,
+                capacity: t.capacity ?? t.Capacity,
+                widthPosition: t.widthPosition ?? t.WidthPosition,
+                lengthPosition: t.lengthPosition ?? t.LengthPosition
+            }));
+
+            const modelReservations = (rawReservations ?? []).map(r => ({
+                tablesIds: r.tablesIds ?? r.TablesIds ?? [],
+                startDate: r.startDate ?? r.StartDate,
+                endDate: r.endDate ?? r.EndDate
+            }));
+
+            function loadUserId(){
+                if (modelUserId) {
+                    user = modelUserId;
+                    return;
                 }
+                document.getElementById('bookBtn').textContent = 'Увійдіть, щоб забронювати';
+                document.getElementById('bookBtn').href = '/Account/Login';
             }
 
             const halls = [];
 
-            async function loadHalls() {
-                const response = await fetch(`/api/halls`, {
-                    method: 'GET'
-                });
-                if (response.ok) {
-                    var data = await response.json();
-                    halls.push(...data);
-                } else {
-                    alert('Помилка видалення бронювання');
-                }
+            function loadHalls() {
+                halls.push(...modelHalls);
             }
 
             const tables = [];
 
-            async function loadTables(hallId) {
-                const response = await fetch(`/api/tables/hall/${hallId}`, {
-                    method: 'GET'
-                });
-                if (response.ok) {
-                    var data = await response.json();
-                    tables.push(...data);
-                } else {
-                    alert('Помилка видалення бронювання');
-                }
+            function loadTables(hallId) {
+                tables.length = 0;
+                tables.push(...modelTables.filter(t => t.hallId === hallId));
             }
 
             const reservations = [];
 
-            async function loadReservations(hallId) {
-                const response = await fetch(`/api/reservations/hall/${hallId}`);
-                if (!response.ok) return;
-                const data = await response.json();
-        
+            function loadReservations(hallId) {
+                const data = modelReservations.filter(r => {
+                    const reservationTableIds = r.tablesIds ?? [];
+                    return reservationTableIds.some(id => modelTables.some(t => t.id === id && t.hallId === hallId));
+                });
                 reservations.length = 0;
                 data.forEach(r => {
                     reservations.push({
@@ -276,10 +283,10 @@
             // ─── Вибір залу ──────────────────────────────────────────────────────────
             async function selectHall(hallId) {
                 currentHallId = hallId;
-                selectedTableId = [];
+                selectedTableIds = [];
 
-                await loadTables(hallId);
-                await loadReservations(hallId);
+                loadTables(hallId);
+                loadReservations(hallId);
 
                 checkedOnce = true;
                 checkAvailability(); 
@@ -352,7 +359,7 @@
                 });
 
                 checkedOnce = true; 
-                selectedTableId = [];
+                selectedTableIds = [];
 
                 document.getElementById('selectionCard').style.display = 'none';
 
@@ -419,7 +426,8 @@
                 renderMap(hall);
             }
 
-            document.getElementById('bookBtn').addEventListener('click', async () => {
+            document.getElementById('bookBtn').addEventListener('click', (e) => {
+                e.preventDefault();
                 if (user === null) {
                     return;
                 }
@@ -440,33 +448,29 @@
                 const pad = (n) => String(n).padStart(2, '0');
                 const toLocalStr = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-                const body = {
-                    tableIds:  selectedTableIds,
-                    startDate: startVal,
-                    endDate: toLocalStr(end),
-                    userId: user
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Tables/Book';
+                form.style.display = 'none';
+
+                const appendInput = (name, value) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
                 };
 
-                console.log('body:', body);
-
-                const response = await fetch('/api/reservations', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify(body)
-                });
-
-                if (response.ok) {
-                    window.location.href = 'Reservations';
-                    console.log('response:', response);
-                } else {
-                    const err = await response.json();
-                    alert('Помилка: ' + (err.message ?? 'невідома помилка'));
-                }
+                selectedTableIds.forEach(id => appendInput('tableIds', id));
+                appendInput('startDate', startVal);
+                appendInput('endDate', toLocalStr(end));
+                document.body.appendChild(form);
+                form.submit();
             });
 
             async function start() {
-                await loadUserId();
-                await loadHalls();
+                loadUserId();
+                loadHalls();
                 await init();
             }
 

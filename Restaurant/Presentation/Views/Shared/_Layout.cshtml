@@ -17,24 +17,30 @@
             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tables" ? "active" : "")"
                asp-controller="Tables" asp-action="Index">Столики</a>
 
-            <a style="display:none;" id="nav-reservations" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reservations" ? "active" : "")"
-               asp-controller="Reservations" asp-action="Index">Мої бронювання</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reservations" ? "active" : "")"
+                   asp-controller="Reservations" asp-action="Index">Мої бронювання</a>
+            }
 
-            <a id="nav-admin" style="display:none;"
-               class="nav-link"
-               asp-controller="Admin" asp-action="Index">Адмін</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="nav-link" asp-controller="Admin" asp-action="Index">Адмін</a>
+            }
 
             <div class="ms-auto d-flex gap-2 align-items-center">
-                <a id="nav-login" class="btn btn-sm btn-outline-light"
-                   asp-controller="Account" asp-action="Login">Увійти</a>
-                <a id="nav-register" class="btn btn-sm btn-primary"
-                   asp-controller="Account" asp-action="Register">Реєстрація</a>
-
-                <span id="nav-username" style="display:none; color:#fff; font-weight:600;"></span>
-                <button id="nav-logout" style="display:none; color:orangered;"
-                        class="btn btn-sm btn-outline-danger">
-                    Вийти
-                </button>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span style="color:#fff; font-weight:600;">@User.Identity.Name</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Вийти</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Login">Увійти</a>
+                    <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Register">Реєстрація</a>
+                }
             </div>
         </div>
     </nav>
@@ -44,50 +50,10 @@
     </main>
 
     <footer>
-        &copy; @DateTime.Now.Year Restaurant — бронювання столиків &nbsp;|&nbsp;
-        <a href="/swagger" style="color:var(--accent);">API</a>
+        &copy; @DateTime.Now.Year Restaurant — бронювання столиків
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-<script>
-    document.getElementById('nav-logout').addEventListener('click', async () => {
-        const response = await fetch('/api/users/logout', {
-            method: 'GET'
-        });
-        if (response.ok) {
-            document.getElementById('nav-login').style.display = 'inline';
-            document.getElementById('nav-register').style.display = 'inline';
-            document.getElementById('nav-username').style.display = 'none';
-            document.getElementById('nav-logout').style.display = 'none';
-            document.getElementById('nav-admin').style.display = 'none';
-            document.getElementById('nav-reservations').style.display = 'none';
-            window.location.href = '/';
-        }
-
-    });
-
-    async function checkAuth() {
-        const response = await fetch('/api/users/verify', {
-            method: 'GET'
-        });
-        if (response.ok) {
-            const user = await response.json();
-
-            document.getElementById('nav-login').style.display = 'none';
-            document.getElementById('nav-register').style.display = 'none';
-            document.getElementById('nav-username').style.display = 'inline';
-            document.getElementById('nav-reservations').style.display = 'inline';
-            document.getElementById('nav-username').textContent = user.login;
-            document.getElementById('nav-logout').style.display = 'inline';
-
-            if (user.role === 'Admin') {
-                document.getElementById('nav-admin').style.display = 'inline';
-            }
-        }
-    }
-    checkAuth();
-</script>

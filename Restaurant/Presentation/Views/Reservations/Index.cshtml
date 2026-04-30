@@ -1,3 +1,4 @@
+@model Restaurant.Presentation.ViewModels.Reservations.ReservationsIndexViewModel
 @{
     ViewData["Title"] = "Мої бронювання";
 }
@@ -6,7 +7,7 @@
     <div class="container d-flex justify-content-between align-items-center">
         <div>
             <h1>Мої бронювання</h1>
-            <span class="text-muted">GET /api/reservations</span>
+            <span class="text-muted">Список ваших бронювань</span>
         </div>
         <a asp-controller="Tables" asp-action="Index" class="btn btn-primary btn-sm">
             + Нове бронювання
@@ -29,81 +30,38 @@
                     </tr>
                 </thead>
                 <tbody id="tbody">
+                    @if (!Model.Reservations.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">Немає бронювань</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var r in Model.Reservations)
+                        {
+                            var badgeClass = r.Status == "Активне" ? "badge-free"
+                                : r.Status == "Очікує" ? "badge-reserved"
+                                : "badge-done";
+                            <tr>
+                                <td>@r.HallName</td>
+                                <td>@string.Join(", ", r.TablesNumbers)</td>
+                                <td>@r.StartDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@r.EndDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td><span class="@badgeClass">@r.Status</span></td>
+                                <td>
+                                    <form asp-controller="Reservations" asp-action="Delete" method="post">
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button id="deleteButton" type="submit">Видалити Бронь</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
     </div>
 
     <p id="message" class="text-muted small mt-2">
-        Бронювання видаляється через DELETE /api/reservations/{id}
+        Видалення виконується через MVC форму
     </p>
 </div>
-
-<script>
-        async function deleteReservation(id) {
-            const response = await fetch(`/api/reservations/${id}`, {
-                method: 'DELETE'
-            });
-            if (response.ok) {
-                loadReservations();
-            } else {
-                alert('Помилка видалення бронювання');
-            }
-        }
-
-        async function loadReservations() {
-        const response = await fetch('/api/reservations');
-
-        if (!response.ok) {
-            document.getElementById('message').innerText = 'Помилка завантаження';
-            document.getElementById('reservations').style.display = 'none';
-            return;
-        }
-
-        const text = await response.text();
-        if (!text) {
-            document.getElementById('message').innerText = 'Немає бронювань';
-            document.getElementById('reservations').style.display = 'none';
-            return;
-        }
-
-        const data = JSON.parse(text);
-
-        if (!data || data.length === 0) {
-            document.getElementById('message').innerText = 'Немає бронювань';
-            document.getElementById('reservations').style.display = 'none';
-            return;
-        }
-
-        const tbody = document.getElementById('tbody');
-
-        function getDate(date){
-            const d = new Date(date);
-            const dateStr = d.toLocaleDateString('uk');
-            const timeStr = d.toLocaleTimeString('uk', { hour: '2-digit', minute: '2-digit' });
-            return `${dateStr} ${timeStr}`
-        }
-
-        tbody.innerHTML = '';
-        data.forEach(r => {
-            const tr = document.createElement('tr');
-            const badgeClass = r.status === 'Активне' ? 'badge-free'
-                     : r.status === 'Очікує'  ? 'badge-reserved'
-                     : 'badge-done';
-            tr.innerHTML = `
-                <td>${r.hallName}</td>
-                <td>${(r.tablesNumbers ?? []).join(', ')}</td>
-                <td>${getDate(r.startDate)}</td>
-            <td>${getDate(r.endDate)}</td>
-                <td><span class="${badgeClass}">${r.status}</span></td>
-                <td>
-                <button id="deleteButton" onclick="deleteReservation('${r.id}')">Видалити Бронь</button>
-                </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-        };
-
-        loadReservations();
-</script>

@@ -1,3 +1,4 @@
+@model Restaurant.Presentation.ViewModels.Admin.AdminIndexViewModel
 @{
     ViewData["Title"] = "Адмін-панель";
 }
@@ -322,6 +323,41 @@
 </div>
 
 <script>
+    const rawHalls = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Halls));
+    const rawTables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tables));
+    const rawReservations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Reservations));
+    const rawUsers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Users));
+
+    const initialHalls = (rawHalls ?? []).map(h => ({
+        id: h.id ?? h.Id,
+        name: h.name ?? h.Name,
+        width: h.width ?? h.Width,
+        length: h.length ?? h.Length
+    }));
+
+    const initialTables = (rawTables ?? []).map(t => ({
+        id: t.id ?? t.Id,
+        hallId: t.hallId ?? t.HallId,
+        number: t.number ?? t.Number,
+        capacity: t.capacity ?? t.Capacity,
+        widthPosition: t.widthPosition ?? t.WidthPosition,
+        lengthPosition: t.lengthPosition ?? t.LengthPosition
+    }));
+
+    const initialReservations = (rawReservations ?? []).map(r => ({
+        id: r.id ?? r.Id,
+        tablesNumbers: r.tablesNumbers ?? r.TablesNumbers ?? [],
+        startDate: r.startDate ?? r.StartDate,
+        endDate: r.endDate ?? r.EndDate
+    }));
+
+    const initialUsers = (rawUsers ?? []).map(u => ({
+        id: u.id ?? u.Id,
+        login: u.login ?? u.Login,
+        email: u.email ?? u.Email,
+        role: u.role ?? u.Role
+    }));
+
     let halls = [];
     let editHallId = null;
 
@@ -330,17 +366,10 @@
         return dt.toLocaleDateString('uk') + ' ' + dt.toLocaleTimeString('uk', { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function checkAuth() {
-        const r = await fetch('/api/users/verify');
-        if (!r.ok) { window.location.href = '/'; return; }
-        const u = await r.json();
-        if (u.role !== 'Admin') window.location.href = '/';
-    }
+    function checkAuth() { }
 
     async function loadHalls() {
-        const r = await fetch('/api/halls');
-        if (!r.ok) return;
-        halls = await r.json();
+        halls = [...initialHalls];
 
         const tbody = document.getElementById('hallsTbody');
         tbody.innerHTML = '';
@@ -368,9 +397,7 @@
     }
 
     async function loadTables() {
-        const r = await fetch('/api/tables');
-        if (!r.ok) return;
-        const tables = await r.json();
+        const tables = [...initialTables];
 
         const tbody = document.getElementById('tablesTbody');
         tbody.innerHTML = '';
@@ -398,9 +425,7 @@
     }
 
     async function loadReservations() {
-        const r = await fetch('/api/reservations/all');
-        if (!r.ok) return;
-        const data = await r.json();
+        const data = [...initialReservations];
 
         const tbody = document.getElementById('reservationsTbody');
         tbody.innerHTML = '';
@@ -411,11 +436,11 @@
         }
 
         data.forEach(res => {
-            const tableNums = (res.tables ?? []).map(t => `№${t.number}`).join(', ') || '—';
-            const login = res.user?.login ?? '—';
+            const tableNums = (res.tablesNumbers ?? []).map(n => `№${n}`).join(', ') || '—';
+            const login = '—';
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="text-muted small">${res.id.slice(0, 8)}…</td>
+                <td class="text-muted small">${(res.id ?? '').toString().slice(0, 8)}…</td>
                 <td>${login}</td>
                 <td>${tableNums}</td>
                 <td>${fmtDate(res.startDate)}</td>
@@ -428,9 +453,7 @@
     }
 
     async function loadUsers() {
-        const r = await fetch('/api/users');
-        if (!r.ok) return;
-        const users = await r.json();
+        const users = [...initialUsers];
 
         const tbody = document.getElementById('usersTbody');
         tbody.innerHTML = '';
@@ -441,7 +464,7 @@
         }
 
         users.forEach(u => {
-            const isAdmin = u.role === 1;
+            const isAdmin = String(u.role).toLowerCase() === 'admin' || u.role === 1;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${u.login}</td>
@@ -465,39 +488,53 @@
         new bootstrap.Modal(document.getElementById('modalEditHall')).show();
     }
 
-    async function deleteHall(id) {
+    function deleteHall(id) {
         if (!confirm('Видалити зал?')) return;
-        const r = await fetch(`/api/halls/${id}`, { method: 'DELETE' });
-        if (r.ok) {
-            await loadHalls();
-            await loadTables();
-        } else {
-            alert('Помилка видалення');
-        }
+        submitPost('/Admin/DeleteHall', { id });
     }
 
-    async function deleteTable(id) {
+    function deleteTable(id) {
         if (!confirm('Видалити столик?')) return;
-        const r = await fetch(`/api/tables/${id}`, { method: 'DELETE' });
-        if (r.ok) await loadTables();
-        else alert('Помилка видалення');
+        submitPost('/Admin/DeleteTable', { id });
     }
 
-    async function deleteReservation(id) {
+    function deleteReservation(id) {
         if (!confirm('Видалити бронювання?')) return;
-        const r = await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
-        if (r.ok) await loadReservations();
-        else alert('Помилка видалення');
+        submitPost('/Admin/DeleteReservation', { id });
     }
 
-    async function deleteUser(id) {
+    function deleteUser(id) {
         if (!confirm('Видалити користувача?')) return;
-        const r = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-        if (r.ok) await loadUsers();
-        else alert('Помилка видалення');
+        submitPost('/Admin/DeleteUser', { id });
     }
 
-    document.getElementById('btnAddHall').addEventListener('click', async () => {
+    function submitPost(url, data) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        form.style.display = 'none';
+        Object.entries(data).forEach(([name, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach(v => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = v;
+                    form.appendChild(input);
+                });
+                return;
+            }
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.getElementById('btnAddHall').addEventListener('click', () => {
         const name = document.getElementById('addHallName').value.trim();
         const width = parseInt(document.getElementById('addHallWidth').value);
         const length = parseInt(document.getElementById('addHallLength').value);
@@ -508,25 +545,10 @@
             return;
         }
 
-        const r = await fetch('/api/halls', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, width, length })
-        });
-
-        if (r.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddHall')).hide();
-            document.getElementById('addHallName').value = '';
-            document.getElementById('addHallWidth').value = '';
-            document.getElementById('addHallLength').value = '';
-            errEl.textContent = '';
-            await loadHalls();
-        } else {
-            errEl.textContent = 'Помилка збереження';
-        }
+        submitPost('/Admin/AddHall', { name, width, length });
     });
 
-    document.getElementById('btnEditHall').addEventListener('click', async () => {
+    document.getElementById('btnEditHall').addEventListener('click', () => {
         const name = document.getElementById('editHallName').value.trim();
         const width = parseInt(document.getElementById('editHallWidth').value);
         const length = parseInt(document.getElementById('editHallLength').value);
@@ -537,23 +559,10 @@
             return;
         }
 
-        const r = await fetch('/api/halls', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: editHallId, name, width, length })
-        });
-
-        if (r.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modalEditHall')).hide();
-            errEl.textContent = '';
-            await loadHalls();
-        } else {
-            const text = await r.text();
-            errEl.textContent = text || 'Помилка збереження';
-        }
+        submitPost('/Admin/UpdateHall', { id: editHallId, name, width, length });
     });
 
-    document.getElementById('btnAddTable').addEventListener('click', async () => {
+    document.getElementById('btnAddTable').addEventListener('click', () => {
         const hallId = document.getElementById('addTableHallId').value;
         const number = parseInt(document.getElementById('addTableNumber').value);
         const capacity = parseInt(document.getElementById('addTableCapacity').value);
@@ -566,31 +575,14 @@
             return;
         }
 
-        const r = await fetch('/api/tables', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hallId, number, capacity, widthPosition, lengthPosition })
-        });
-
-        if (r.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddTable')).hide();
-            document.getElementById('addTableNumber').value = '';
-            document.getElementById('addTableCapacity').value = '';
-            document.getElementById('addTableWidthPos').value = '';
-            document.getElementById('addTableLengthPos').value = '';
-            errEl.textContent = '';
-            await loadTables();
-        } else {
-            errEl.textContent = 'Помилка збереження';
-        }
+        submitPost('/Admin/AddTable', { hallId, number, capacity, widthPosition, lengthPosition });
     });
 
     async function openAddReservation() {
         const userSel = document.getElementById('resUserId');
         const hallSel = document.getElementById('resHallId');
 
-        const ur = await fetch('/api/users');
-        const users = ur.ok ? await ur.json() : [];
+        const users = [...initialUsers];
         userSel.innerHTML = users.map(u => `<option value="${u.id}">${u.login} (${u.role === 1 ? 'Admin' : 'User'})</option>`).join('');
 
         hallSel.innerHTML = halls.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
@@ -604,10 +596,8 @@
     }
 
     async function loadResHallTables(hallId) {
-        const r = await fetch(`/api/tables/hall/${hallId}`);
         const list = document.getElementById('resTablesList');
-        if (!r.ok) { list.innerHTML = '<span class="text-muted small">Помилка завантаження</span>'; return; }
-        const tbls = await r.json();
+        const tbls = initialTables.filter(t => t.hallId === hallId);
         if (!tbls.length) { list.innerHTML = '<span class="text-muted small">Немає столиків</span>'; return; }
         list.innerHTML = tbls.map(t => `
             <div class="form-check">
@@ -618,7 +608,7 @@
 
     document.getElementById('resHallId').addEventListener('change', e => loadResHallTables(e.target.value));
 
-    document.getElementById('btnAddReservation').addEventListener('click', async () => {
+    document.getElementById('btnAddReservation').addEventListener('click', () => {
         const userId = document.getElementById('resUserId').value;
         const startVal = document.getElementById('resStartDate').value;
         const duration = parseInt(document.getElementById('resDuration').value);
@@ -635,28 +625,15 @@
         const toLocalStr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
         const end = new Date(new Date(startVal).getTime() + duration * 60 * 60 * 1000);
 
-        const r = await fetch('/api/reservations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId,
-                tableIds: checked,
-                startDate: startVal,
-                endDate: toLocalStr(end)
-            })
+        submitPost('/Admin/AddReservation', {
+            userId,
+            tableIds: checked,
+            startDate: startVal,
+            endDate: toLocalStr(end)
         });
-
-        if (r.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddReservation')).hide();
-            errEl.textContent = '';
-            await loadReservations();
-        } else {
-            const err = await r.json().catch(() => ({}));
-            errEl.textContent = err.message || 'Помилка збереження';
-        }
     });
 
-    document.getElementById('btnAddUser').addEventListener('click', async () => {
+    document.getElementById('btnAddUser').addEventListener('click', () => {
         const login = document.getElementById('addUserLogin').value.trim();
         const email = document.getElementById('addUserEmail').value.trim();
         const password = document.getElementById('addUserPassword').value;
@@ -668,24 +645,7 @@
             return;
         }
 
-        const r = await fetch('/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ login, email, password, role })
-        });
-
-        if (r.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddUser')).hide();
-            document.getElementById('addUserLogin').value = '';
-            document.getElementById('addUserEmail').value = '';
-            document.getElementById('addUserPassword').value = '';
-            document.getElementById('addUserRole').value = 'User';
-            errEl.textContent = '';
-            await loadUsers();
-        } else {
-            const text = await r.text();
-            errEl.textContent = text || 'Помилка збереження';
-        }
+        submitPost('/Admin/AddUser', { login, email, password, role });
     });
 
     async function start() {
