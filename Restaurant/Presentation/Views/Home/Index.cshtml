@@ -41,5 +41,13 @@
                 <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Панель</a>
             </div>
         </div>
+        <div id="lab3" style="@(User.IsInRole("Admin") ? "" : "display:none")" class="col-sm-6 col-md-3">
+            <div class="card h-100 text-center p-3">
+                <div class="fs-2 mb-2">🧪</div>
+                <h6 class="fw-bold">Лаб 3</h6>
+                <p class="text-muted small">Create/Edit + валідація</p>
+                <a asp-controller="Lab3" asp-action="Index" class="btn btn-sm btn-outline-secondary mt-auto">Відкрити</a>
+            </div>
+        </div>
     </div>
 </div>

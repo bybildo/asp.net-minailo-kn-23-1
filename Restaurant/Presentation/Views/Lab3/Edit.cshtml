@@ -1,0 +1,110 @@
+@model Restaurant.Presentation.ViewModels.Lab3.HallEditViewModel
+@{
+    ViewData["Title"] = "Лаб 3 - Edit";
+}
+
+<div class="page-title">
+    <div class="container">
+        <h1>Редагування залу</h1>
+        <span class="text-muted">Server-side + client-side validation</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <form id="hall-edit-form" asp-action="Edit" method="post" novalidate>
+                <input asp-for="Id" type="hidden" />
+
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Width" class="form-label"></label>
+                    <input asp-for="Width" class="form-control" />
+                    <span asp-validation-for="Width" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Length" class="form-label"></label>
+                    <input asp-for="Length" class="form-control" />
+                    <span asp-validation-for="Length" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+   <script>
+    const form = document.getElementById("hall-edit-form");
+    const nameInput = document.getElementById("Name");
+    const widthInput = document.getElementById("Width");
+    const lengthInput = document.getElementById("Length");
+
+    const nameError = document.querySelector('[data-valmsg-for="Name"]');
+    const widthError = document.querySelector('[data-valmsg-for="Width"]');
+    const lengthError = document.querySelector('[data-valmsg-for="Length"]');
+
+    function setError(el, message) {
+        if (!el) return;
+        el.textContent = message;
+    }
+
+    function clearErrors() {
+        setError(nameError, "");
+        setError(widthError, "");
+        setError(lengthError, "");
+    }
+
+    function validateClient() {
+        clearErrors();
+        let valid = true;
+
+        const name = (nameInput.value || "").trim();
+        const width = Number(widthInput.value);
+        const length = Number(lengthInput.value);
+
+        if (!name) {
+            setError(nameError, "Вкажіть назву залу.");
+            valid = false;
+        } else {
+            const first = name.charAt(0);
+            const isUpper = first === first.toUpperCase() && first !== first.toLowerCase();
+            if (!isUpper) {
+                setError(nameError, "Назва має починатися з великої літери.");
+                valid = false;
+            }
+        }
+
+        if (!Number.isFinite(width) || width < 1 || width > 50) {
+            setError(widthError, "Ширина має бути у межах 1..50.");
+            valid = false;
+        }
+
+        if (!Number.isFinite(length) || length < 1 || length > 50) {
+            setError(lengthError, "Довжина має бути у межах 1..50.");
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (validateClient()) {
+            form.submit();
+        }
+    });
+    </script>
+}

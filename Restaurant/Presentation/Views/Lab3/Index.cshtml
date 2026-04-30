@@ -1,0 +1,48 @@
+@model List<Restaurant.Presentation.ViewModels.Lab3.HallListItemViewModel>
+@{
+    ViewData["Title"] = "Лаб 3";
+}
+
+<div class="page-title">
+    <div class="container">
+        <h1>Лаб 3 - Edit Hall</h1>
+        <span class="text-muted">Окрема сторінка редагування з валідацією</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Назва</th>
+                        <th>Ширина</th>
+                        <th>Довжина</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-3">Залів немає</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var hall in Model)
+                        {
+                            <tr>
+                                <td>@hall.Name</td>
+                                <td>@hall.Width</td>
+                                <td>@hall.Length</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@hall.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
