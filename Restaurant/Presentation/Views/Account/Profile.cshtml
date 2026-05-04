@@ -1,0 +1,32 @@
+@model Restaurant.Presentation.ViewModels.Account.ProfileViewModel
+@{
+    ViewData["Title"] = "Профіль";
+}
+
+<div class="container mt-4" style="max-width: 500px;">
+    <h3>Профіль</h3>
+
+    @if (ViewBag.SuccessMessage is not null)
+    {
+        <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+    }
+
+    <form asp-action="Profile" method="post">
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a asp-action="ChangePassword" class="btn btn-outline-secondary">Змінити пароль</a>
+    </form>
+</div>

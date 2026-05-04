@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs.Responses;
 using Restaurant.Application.DTOs.Requests;
+using Restaurant.Application.Identity;
 using Restaurant.Application.Interfaces;
 using Restaurant.Presentation.Filters;
 using Restaurant.Presentation.ViewModels.Admin;
@@ -14,13 +16,23 @@ public class AdminController : Controller
     private readonly ITableService _tableService;
     private readonly IReservationService _reservationService;
     private readonly IUserService _userService;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-    public AdminController(IHallService hallService, ITableService tableService, IReservationService reservationService, IUserService userService)
+    public AdminController(
+        IHallService hallService,
+        ITableService tableService,
+        IReservationService reservationService,
+        IUserService userService,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<Guid>> roleManager)
     {
         _hallService = hallService;
         _tableService = tableService;
         _reservationService = reservationService;
         _userService = userService;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     [Authorize(Roles = "Admin")]
@@ -106,5 +118,52 @@ public class AdminController : Controller
     {
         await _userService.DeleteUser(id);
         return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> IdentityUsers()
+    {
+        var users = _userManager.Users.ToList();
+        var model = new IdentityUsersViewModel();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            model.Users.Add(new IdentityUserItemViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email ?? string.Empty,
+                Role = roles.FirstOrDefault() ?? "User"
+            });
+        }
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeIdentityUserRole(Guid userId, string role)
+    {
+        if (!await _roleManager.RoleExistsAsync(role))
+        {
+            return RedirectToAction(nameof(IdentityUsers));
+        }
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return RedirectToAction(nameof(IdentityUsers));
+        }
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Count > 0)
+        {
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        }
+
+        await _userManager.AddToRoleAsync(user, role);
+        return RedirectToAction(nameof(IdentityUsers));
     }
 }

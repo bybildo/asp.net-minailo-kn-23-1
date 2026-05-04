@@ -26,12 +26,14 @@
             @if (User.IsInRole("Admin"))
             {
                 <a class="nav-link" asp-controller="Admin" asp-action="Index">Адмін</a>
+                <a class="nav-link" asp-controller="Admin" asp-action="IdentityUsers">Користувачі</a>
             }
 
             <div class="ms-auto d-flex gap-2 align-items-center">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <span style="color:#fff; font-weight:600;">@User.Identity.Name</span>
+                    <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Profile">Профіль</a>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Вийти</button>
                     </form>

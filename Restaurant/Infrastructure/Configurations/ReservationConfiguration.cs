@@ -10,10 +10,7 @@ namespace Restaurant.Infrastructure.Configurations
         {
             builder.HasKey(r => r.Id);
 
-            builder.HasOne(r => r.User)
-                   .WithMany()
-                   .HasForeignKey(r => r.UserId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.Ignore(r => r.User);
 
             builder.Property(r => r.StartDate)
                    .IsRequired();

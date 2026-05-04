@@ -346,6 +346,7 @@
 
     const initialReservations = (rawReservations ?? []).map(r => ({
         id: r.id ?? r.Id,
+        userId: r.userId ?? r.UserId,
         tablesNumbers: r.tablesNumbers ?? r.TablesNumbers ?? [],
         startDate: r.startDate ?? r.StartDate,
         endDate: r.endDate ?? r.EndDate
@@ -437,7 +438,8 @@
 
         data.forEach(res => {
             const tableNums = (res.tablesNumbers ?? []).map(n => `№${n}`).join(', ') || '—';
-            const login = '—';
+            const user = initialUsers.find(u => String(u.id) === String(res.userId));
+            const login = user?.login || user?.email || '—';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="text-muted small">${(res.id ?? '').toString().slice(0, 8)}…</td>

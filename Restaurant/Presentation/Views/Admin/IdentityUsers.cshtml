@@ -1,0 +1,48 @@
+@model Restaurant.Presentation.ViewModels.Admin.IdentityUsersViewModel
+@{
+    ViewData["Title"] = "Identity користувачі";
+}
+
+<div class="container mt-4">
+    <h3>Керування користувачами (Identity)</h3>
+    <p class="text-muted">Тут адміністратор може змінювати ролі користувачів.</p>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Ім'я</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Дія</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>
+                        <form asp-action="ChangeIdentityUserRole" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="role" class="form-select form-select-sm" style="max-width: 140px;">
+                                @if (user.Role == "User")
+                                {
+                                    <option value="User" selected>User</option>
+                                    <option value="Admin">Admin</option>
+                                }
+                                else
+                                {
+                                    <option value="User">User</option>
+                                    <option value="Admin" selected>Admin</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Зберегти</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,4 +1,4 @@
-@model Application.DTOs.Requests.LoginUserRequest
+@model Restaurant.Presentation.ViewModels.Account.LoginViewModel
 @{
     ViewData["Title"] = "Вхід";
 }
@@ -11,11 +11,11 @@
         <form asp-controller="Account" asp-action="Login" method="post">
             <div class="mb-3">
                 <label class="form-label" for="email">Пошта</label>
-                <input type="text" id="email" name="Email" class="form-control" placeholder="your_email" autocomplete="username" />
+                <input asp-for="Email" id="email" class="form-control" placeholder="your@email.com" autocomplete="username" />
             </div>
             <div class="mb-4">
                 <label class="form-label" for="password">Пароль</label>
-                <input type="password" id="password" name="Password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
+                <input asp-for="Password" id="password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
             </div>
             <div asp-validation-summary="All" class="text-danger small"></div>
             <button type="submit" class="btn btn-primary w-100">Увійти</button>
@@ -25,6 +25,9 @@
         <p class="text-center small mb-0">
             Немає акаунту?
             <a asp-controller="Account" asp-action="Register">Зареєструватись</a>
+        </p>
+        <p class="text-center small mt-2 mb-0">
+            <a asp-controller="Account" asp-action="ForgotPassword">Забули пароль?</a>
         </p>
     </div>
 </div>

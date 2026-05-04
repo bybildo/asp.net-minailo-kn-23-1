@@ -24,7 +24,6 @@ namespace Restaurant.Infrastructure.Repositories
         public async Task<List<Reservation>> GetAllWithDetailsAsync()
             => await _context.Reservations
                 .Include(r => r.Tables)
-                .Include(r => r.User)
                 .ToListAsync();
 
         public async Task<bool> HasConflictAsync(DateTime startDate, DateTime endDate, List<Guid> tableIds)

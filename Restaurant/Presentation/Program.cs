@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Restaurant.Application.Identity;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.Application.Interfaces;
 using Restaurant.Application.Services;
@@ -21,7 +22,25 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+    {
+        options.Password.RequiredLength = 6;
+        options.Password.RequireDigit = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/Login";
+});
+
+builder.Services.AddScoped<IUserRepository, IdentityUserRepository>();
 builder.Services.AddScoped<IHallRepository, HallRepository>();
 builder.Services.AddScoped<ITableRepository, TableRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
@@ -32,13 +51,14 @@ builder.Services.AddScoped<IHallService, HallService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<ServiceLevelLogFilter>();
-
-builder.Services.AddAuthentication("CookieJwt")
-    .AddScheme<AuthenticationSchemeOptions, JwtCookieAuthHandler>("CookieJwt", null);
+builder.Services.AddScoped<IAppEmailSender, AppEmailSender>();
 
 builder.Services.AddAuthorization();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+await IdentitySeed.SeedAdminAsync(app.Services);
 
 app.UseCustomExceptionHandler();
 
@@ -80,6 +100,7 @@ app.Map("/lab4-map", mapApp =>
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 app.Map("/lab4-run", runApp =>
 {

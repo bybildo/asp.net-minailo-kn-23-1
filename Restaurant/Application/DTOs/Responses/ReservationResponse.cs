@@ -6,6 +6,7 @@ namespace Application.DTOs.Responses
     public record ReservationResponse
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public string HallName { get; set; }
         public ICollection<Guid> TablesIds { get; set; } = new List<Guid>();   
         public ICollection<int> TablesNumbers { get; set; } = new List<int>();
@@ -16,6 +17,7 @@ namespace Application.DTOs.Responses
         public ReservationResponse(Reservation reservation)
         {
             Id = reservation.Id;
+            UserId = reservation.UserId;
             HallName = reservation.Tables?.First()?.Hall?.Name;
             TablesIds = reservation.Tables.Select(t => t.Id).ToList();
             TablesNumbers = reservation.Tables.Select(t => t.Number).ToList();
